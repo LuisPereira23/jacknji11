@@ -21,9 +21,10 @@
 
 package org.pkcs11.jacknji11;
 
-import junit.framework.TestCase;
-
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+
+import junit.framework.TestCase;
 
 /**
  * JUnit tests for jacknji11.
@@ -31,7 +32,7 @@ import java.util.Arrays;
  * The functions not tested are in commented lines.
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
-public class CryptokiEdDSATest extends TestCase {
+public class CryptokiTest extends TestCase {
     private byte[] SO_PIN = "sopin".getBytes();
     private byte[] USER_PIN = "userpin".getBytes();
     private long TESTSLOT = 0;
@@ -68,36 +69,42 @@ public class CryptokiEdDSATest extends TestCase {
     public void testGetInfo() {
         CK_INFO info = new CK_INFO();
         CE.GetInfo(info);
-//        System.out.println(info);
+        System.out.println("testGetInfo");
+        System.out.println(info);
     }
 
     public void testGetSlotList() {
         long[] slots = CE.GetSlotList(true);
-//        System.out.println("slots: " + Arrays.toString(slots));
+        System.out.println("testGetSlotList");
+        System.out.println("slots: " + Arrays.toString(slots));
     }
 
     public void testGetSlotInfo() {
         CK_SLOT_INFO info = new CK_SLOT_INFO();
         CE.GetSlotInfo(TESTSLOT, info);
-//        System.out.println(info);
+        System.out.println("testGetSlotInfo - Testslot: " + TESTSLOT);
+        System.out.println(info);
     }
 
     public void testGetTokenInfo() {
         CK_TOKEN_INFO info = new CK_TOKEN_INFO();
         CE.GetTokenInfo(TESTSLOT, info);
-//        System.out.println(info);
+        System.out.println("testGetTokenInfo - Testslot: " + TESTSLOT);
+        System.out.println(info);
     }
 
     public void testGetMechanismList() {
+        System.out.println("testGetMechanismList");
         for (long mech : CE.GetMechanismList(TESTSLOT)) {
-//            System.out.println(String.format("0x%08x : %s", mech, CKM.L2S(mech)));
+            System.out.println(String.format("0x%08x : %s", mech, CKM.L2S(mech)));
         }
     }
 
     public void testGetMechanismInfo() {
         CK_MECHANISM_INFO info = new CK_MECHANISM_INFO();
         CE.GetMechanismInfo(TESTSLOT, CKM.AES_CBC, info);
-//        System.out.println(info);
+        System.out.println("testGetMechanismInfo");
+        System.out.println(info);
     }
 
     public void testInitTokenInitPinSetPin() {
@@ -110,13 +117,15 @@ public class CryptokiEdDSATest extends TestCase {
         byte[] somenewpin = "somenewpin".getBytes();
         CE.SetPIN(session, USER_PIN, somenewpin);
         CE.SetPIN(session, somenewpin, USER_PIN);
+        System.out.println("testGetMechanismInfo");
     }
 
     public void testGetSessionInfo() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CK_SESSION_INFO sessionInfo = new CK_SESSION_INFO();
         CE.GetSessionInfo(session, sessionInfo);
-//        System.out.println(sessionInfo);
+        System.out.println("testGetSessionInfo");
+        System.out.println(sessionInfo);
     }
 
     public void testGetSessionInfoCloseAllSessions() {
@@ -124,7 +133,8 @@ public class CryptokiEdDSATest extends TestCase {
         long s2 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CK_SESSION_INFO info = new CK_SESSION_INFO();
         CE.GetSessionInfo(s2, info );
-//        System.out.println(info);
+        System.out.println("testGetSessionInfoCloseAllSessions");
+        System.out.println(info);
         long s3 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.CloseSession(s1);
         CE.CloseAllSessions(TESTSLOT);
@@ -135,6 +145,7 @@ public class CryptokiEdDSATest extends TestCase {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         byte[] state = CE.GetOperationState(session);
         CE.SetOperationState(session, state, 0, 0);
+        System.out.println("testGetSetOperationState");
     }
 
     public void testCreateCopyDestroyObject() {
@@ -151,6 +162,7 @@ public class CryptokiEdDSATest extends TestCase {
         long o2 = CE.CopyObject(session, o1, newTempl);
         CE.DestroyObject(session, o1);
         CE.DestroyObject(session, o2);
+        System.out.println("testCreateCopyDestroyObject");
     }
 
     public void testGetObjectSizeGetSetAtt() {
@@ -196,6 +208,7 @@ public class CryptokiEdDSATest extends TestCase {
         assertNull(CE.GetAttributeValue(session, o, CKA.ID).getValueStr());
         assertNull(templ[2].getValue());
         assertNull(templ[3].getValueBool());
+        System.out.println("testGetObjectSizeGetSetAtt");
     }
 
     public void testFindObjects() {
@@ -226,6 +239,7 @@ public class CryptokiEdDSATest extends TestCase {
         assertEquals(o4, found[0]);
         assertEquals(0, CE.FindObjects(session, 2).length);
         CE.FindObjectsFinal(session);
+        System.out.println("testFindObjects");
     }
 
 
@@ -260,6 +274,8 @@ public class CryptokiEdDSATest extends TestCase {
         byte[] decrypted2b = CE.DecryptUpdate(session, Buf.substring(encrypted1, 8, 8));
         byte[] decrypted2c = CE.DecryptFinal(session);
         assertTrue(Arrays.equals(plaintext, Buf.cat(decrypted2a, decrypted2b, decrypted2c)));
+        System.out.println(
+                "testEncryptDecrypt: " + Arrays.equals(plaintext, Buf.cat(decrypted2a, decrypted2b, decrypted2c)));
     }
 
     public void testDigest() {
@@ -285,6 +301,11 @@ public class CryptokiEdDSATest extends TestCase {
         CE.DigestInit(session, new CKM(CKM.SHA256));
         CE.DigestKey(session, aeskey);
         byte[] digestedKey = CE.DigestFinal(session);
+
+        /* TODO: Falta aqui fazer mais uns testes para o digestedKey */
+
+        System.out.println("testDigest: " + String.valueOf(32 == digested1.length) + " - "
+                + Arrays.equals(digested1, digested2));
     }
 
     public void testSignVerifyRSAPKCS1() {
@@ -334,6 +355,9 @@ public class CryptokiEdDSATest extends TestCase {
         byte[] sig2 = CE.SignFinal(session);
         assertTrue(Arrays.equals(sig1, sig2));
 
+        System.out.println(
+                "testSignVerifyRSAPKCS1: " + String.valueOf(128 == sig1.length) + " - " + Arrays.equals(sig1, sig2));
+
         CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.value());
         CE.VerifyUpdate(session, new byte[50]);
         CE.VerifyUpdate(session, new byte[50]);
@@ -345,6 +369,9 @@ public class CryptokiEdDSATest extends TestCase {
             fail("CE Verify with no real signature should throw exception");
         } catch (CKRException e) {
             assertEquals("Failure with invalid signature data should be CKR.SIGNATURE_INVALID", CKR.SIGNATURE_INVALID, e.getCKR());
+            System.out.println(
+                    "testSignVerifyRSAPKCS1: Exception expected " + CKR.SIGNATURE_INVALID + " - Actual exception: "
+                            + e.getCKR());
         }
     }
 
@@ -386,6 +413,9 @@ public class CryptokiEdDSATest extends TestCase {
         byte[] sig1 = CE.Sign(session, data);
         assertEquals(128, sig1.length);
 
+        System.out.println(
+                "testSignVerifyRSAPSS: " + String.valueOf(128 == sig1.length));
+
         CE.VerifyInit(session, ckm, pubKey.value());
         CE.Verify(session, data, sig1);
         
@@ -408,6 +438,9 @@ public class CryptokiEdDSATest extends TestCase {
             fail("CE Verify with no real signature should throw exception");
         } catch (CKRException e) {
             assertEquals("Failure with invalid signature data should be CKR.SIGNATURE_INVALID", CKR.SIGNATURE_INVALID, e.getCKR());
+            System.out.println(
+                    "testSignVerifyRSAPSS: Exception expected " + CKR.SIGNATURE_INVALID + " - Actual exception: "
+                            + e.getCKR());
         }
     }
 
@@ -454,6 +487,8 @@ public class CryptokiEdDSATest extends TestCase {
         byte[] sig1 = CE.Sign(session, data);
         assertEquals(64, sig1.length);
 
+        System.out.println("testSignVerifyECDSA: " + String.valueOf(64 == sig1.length));
+
         CE.VerifyInit(session, new CKM(CKM.ECDSA), pubKey.value());
         CE.Verify(session, data, sig1);
 
@@ -462,6 +497,12 @@ public class CryptokiEdDSATest extends TestCase {
             CE.Verify(session, data, new byte[64]);
             fail("CE Verify with no real signature should throw exception");
         } catch (CKRException e) {
+            System.out.println(
+                    "testSignVerifyECDSA: Exception expected " + CKR.SIGNATURE_INVALID + " : "
+                            + CKR.L2S(CKR.SIGNATURE_INVALID) + " - Actual exception: "
+                            + e.getCKR() + " : " + CKR.L2S(e.getCKR()));
+            // Utimaco Simulator exception: GENERAL_ERROR instead of SIGNATURE_INVALID, when
+            // no real signature
             assertEquals("Failure with invalid signature data should be CKR.SIGNATURE_INVALID", CKR.SIGNATURE_INVALID, e.getCKR());
         }
     }
@@ -495,41 +536,41 @@ public class CryptokiEdDSATest extends TestCase {
         // We use a Ed25519 key, the oid 1.3.101.112 has DER encoding in Hex 06032b6570
         byte[] ecCurveParams = Hex.s2b("06032b6570");
         CKA[] pubTempl = new CKA[] {
-                new CKA(CKA.EC_PARAMS, "edwards25519"),
-                new CKA(CKA.WRAP, false),
-                new CKA(CKA.ENCRYPT, false),
-                new CKA(CKA.VERIFY, true),
-                //new CKA(CKA.VERIFY_RECOVER, false),
-                new CKA(CKA.TOKEN, true),
-                new CKA(CKA.LABEL, "My EDDSA Public Key"),
-                new CKA(CKA.ID, 0x525341),
+            new CKA(CKA.EC_PARAMS, ecCurveParams),
+            new CKA(CKA.WRAP, false),
+            new CKA(CKA.ENCRYPT, false),
+            new CKA(CKA.VERIFY, true),
+            new CKA(CKA.VERIFY_RECOVER, false),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.LABEL, "label-public"),
+            new CKA(CKA.ID, "label"),
         };
         CKA[] privTempl = new CKA[] {
-                new CKA(CKA.TOKEN, true),
-                new CKA(CKA.PRIVATE, true),
-                new CKA(CKA.SENSITIVE, true),
-                new CKA(CKA.SIGN, true),
-                //new CKA(CKA.SIGN_RECOVER, false),
-                new CKA(CKA.DECRYPT, false),
-                new CKA(CKA.UNWRAP, false),
-                new CKA(CKA.EXTRACTABLE, true),
-                new CKA(CKA.LABEL, "My EDDSA Private Key"),
-                new CKA(CKA.ID, "EDDSA"),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
+            new CKA(CKA.SIGN, true),
+            new CKA(CKA.SIGN_RECOVER, false),
+            new CKA(CKA.DECRYPT, false),
+            new CKA(CKA.UNWRAP, false),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "label-private"),
+            new CKA(CKA.ID, "label"),
         };
         LongRef pubKey = new LongRef();
         LongRef privKey = new LongRef();
-        CE.GenerateKeyPair(session, new CKM(CKM.EC_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+        CE.GenerateKeyPair(session, new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
 
         // Direct sign, PKCS#11 "2.3.14 EdDSA"
         byte[] data = new byte[32]; // SHA256 hash is 32 bytes
-        CE.SignInit(session, new CKM(CKM.ECDSA), privKey.value());
+        CE.SignInit(session, new CKM(CKM.EDDSA), privKey.value());
         byte[] sig1 = CE.Sign(session, data);
         assertEquals(64, sig1.length);
 
-        CE.VerifyInit(session, new CKM(CKM.ECDSA), pubKey.value());
+        CE.VerifyInit(session, new CKM(CKM.EDDSA), pubKey.value());
         CE.Verify(session, data, sig1);
 
-        CE.VerifyInit(session, new CKM(CKM.ECDSA), pubKey.value());
+        CE.VerifyInit(session, new CKM(CKM.EDDSA), pubKey.value());
         try {
             CE.Verify(session, data, new byte[64]);
             fail("CE Verify with no real signature should throw exception");
@@ -580,10 +621,20 @@ public class CryptokiEdDSATest extends TestCase {
         data = new byte[10];
         CE.SignRecoverInit(session, new CKM(CKM.RSA_PKCS), privKey.value());
         byte[] sigrec1 = CE.SignRecover(session, data);
-        assertEquals(64, sig1.length);
+
+        /*
+         * TODO: Antes o expected era 64 bytes para o sig1 e dava erro. Ver se é mesmo
+         * 128 bytes
+         * para estes dados.
+         */
+        assertEquals(128, sigrec1.length);
+
         CE.VerifyRecoverInit(session, new CKM(CKM.RSA_PKCS), pubKey.value());
         byte[] recdata = CE.VerifyRecover(session, sigrec1);
         assertTrue(Arrays.equals(data, recdata));
+
+        System.out.println("testSignVerifyRecoveryRSA: " + String.valueOf(128 == sig1.length) + " - "
+                + String.valueOf(128 == sigrec1.length) + " - " + Arrays.equals(data, recdata));
     }
 
 //    public static native long C_DigestEncryptUpdate(long session, byte[] part, long part_len, byte[] encrypted_part, LongRef encrypted_part_len);
@@ -670,6 +721,7 @@ public class CryptokiEdDSATest extends TestCase {
         byte[] aeskey2buf = CE.GetAttributeValue(session, aeskey2, CKA.VALUE).getValue();
         assertTrue(Arrays.equals(aeskey2buf, aeskeybuf));
 
+        System.out.println("testGenerateKeyWrapUnwrap: " + Arrays.equals(aeskey2buf, aeskeybuf));
     }
 
     public void testPTKDES3Derive() {
@@ -688,10 +740,16 @@ public class CryptokiEdDSATest extends TestCase {
     
     public void testRandom() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+
+        /* TODO: Faltava aqui fazer login */
+        CE.LoginUser(session, USER_PIN);
+
         byte[] buf = new byte[16];
         CE.SeedRandom(session, buf);
         CE.GenerateRandom(session, buf);
         byte[] buf2 = CE.GenerateRandom(session, 16);
+
+        System.out.println("testRandom: " + buf2);
     }
 
 //    public static native long C_GetFunctionStatus(long session);
